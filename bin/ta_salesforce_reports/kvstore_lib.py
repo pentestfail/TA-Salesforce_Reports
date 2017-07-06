@@ -186,9 +186,9 @@ class KVClient(object):
         uri = "{0}/servicesNS/{1}/{2}/storage/collections/data"
         return self._do_get_endpoint(app, owner, collection, key_id, uri)
 
-    def _get_lookup_endpoint(self, app, owner):
+    def _get_lookup_endpoint(self, app, owner, lookup):
         uri = "{0}/servicesNS/{1}/{2}/data/transforms/lookups"
-        return self._do_get_endpoint(app, owner, None, None, uri)
+        return self._do_get_endpoint(app, owner, lookup, None, uri)
 
     def _do_get_endpoint(self, app, owner, collection, key_id, uri_template):
         if not app:
@@ -237,7 +237,7 @@ class KVClient(object):
         assert app
         assert fields
 
-        uri = self._get_lookup_endpoint(app, owner)
+        uri = self._get_lookup_endpoint(app, owner, lookup)
         data = {
             "name": lookup,
             "collection": lookup,
@@ -245,4 +245,20 @@ class KVClient(object):
             "fields_list": fields
         }
         self._do_request(uri, "POST", data)
+
+    def delete_collection_query(self, collection, app, query, owner="nobody"):
+        """
+        :collection: collection name
+        :return: None if successful otherwise KV exception thrown
+        """
+
+        assert collection
+        assert app
+        assert query
+
+        uri = self._get_data_endpoint(app, owner, collection)
+        qs = {"query": query}
+        uri += "?" + urllib.urlencode(qs)
+        
+        self._do_request(uri, "DELETE")
         
